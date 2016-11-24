@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    android:paddingBottom="@dimen/activity_vertical_margin"
+    android:paddingLeft="@dimen/activity_horizontal_margin"
+    android:paddingRight="@dimen/activity_horizontal_margin"
+    android:paddingTop="@dimen/activity_vertical_margin"
+    tools:context="com.example.school.toolinfodoc.MainActivity">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/iniciar_sesion"
+        android:id="@+id/lblTitulo"
+        android:textSize="24sp"
+        android:textStyle="bold|italic"
+        android:layout_marginBottom="20dp"
+        android:textAlignment="center"
+        android:textColor="#000000"/>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/linLoginFields"
+        android:orientation="vertical"
+        android:layout_below="@+id/lblTitulo">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/cedula_de_identidad"
+            android:id="@+id/lblCedula"
+            android:textSize="16sp"
+            android:textStyle="bold|italic"
+            android:textColor="#000000"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:id="@+id/txtCedula"
+            android:background="@drawable/school_board"
+            android:inputType="number"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/contrasenia"
+            android:id="@+id/lblClave"
+            android:textSize="16sp"
+            android:textStyle="bold|italic"
+            android:textColor="#000000"/>
+
+        <EditText
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:id="@+id/txtClave"
+            android:background="@drawable/school_board"
+            android:inputType="textPassword"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:layout_marginBottom="15dp"/>
+
+    </LinearLayout>
+
+    <Button
+        android:layout_width="match_parent"
+        android:layout_height="50dp"
+        android:id="@+id/btnIngresar"
+        android:text="@string/ingresar"
+        android:textSize="18sp"
+        android:layout_below="@+id/linLoginFields"/>
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:id="@+id/img"
+        android:src="@drawable/parent_student_success"
+        android:scaleType="centerInside"
+        android:contentDescription="@string/app_name"
+        android:layout_below="@+id/btnIngresar"/>
+
+
+</RelativeLayout>

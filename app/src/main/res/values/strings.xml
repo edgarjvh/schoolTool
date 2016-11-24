@@ -1,0 +1,9 @@
+<resources>
+    <string name="app_name">ToolInfoDoc</string>
+    <string name="cedula_de_identidad">Cédula de Identidad</string>
+    <string name="modulo_docente">Módulo Docente</string>
+    <string name="ingresar">Ingresar</string>
+    <string name="contrasenia">Contraseña</string>
+    <string name="modulo_representante">Módulo Representante</string>
+    <string name="iniciar_sesion">Iniciar Sesión</string>
+</resources>
