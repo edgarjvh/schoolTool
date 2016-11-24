@@ -30,6 +30,6 @@ public class Principal extends AppCompatActivity {
                 res.getDrawable(R.drawable.message_icon));
         tabs.addTab(spec);
 
-        tabs.setCurrentTab(0);
+        tabs.setCurrentTab(1);
     }
 }
