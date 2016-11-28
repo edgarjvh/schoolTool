@@ -6,4 +6,7 @@
     <string name="contrasenia">Contraseña</string>
     <string name="modulo_representante">Módulo Representante</string>
     <string name="iniciar_sesion">Iniciar Sesión</string>
+    <string name="esta_semana">Esta Semana</string>
+    <string name="este_mes">Este Mes</string>
+    <string name="este_año">Este Año</string>
 </resources>

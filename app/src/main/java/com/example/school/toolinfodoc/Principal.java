@@ -3,14 +3,27 @@ package com.example.school.toolinfodoc;
 import android.content.res.Resources;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Html;
 import android.widget.TabHost;
+import android.widget.TextView;
 
 public class Principal extends AppCompatActivity {
+
+    private Representante representante;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_principal);
+
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            representante = (Representante) getIntent().getSerializableExtra("Representante"); //Obtaining data
+        }
+
+        AutoResizeTextView lblNombre = (AutoResizeTextView)findViewById(R.id.lblNombre);
+        String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" + representante.getApellidos() + ", " + representante.getNombres() + "</font>";
+        lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
 
         Resources res = getResources();
 
