@@ -6,15 +6,18 @@ package com.example.school.toolinfodoc;
 
 public class lvCalendarioItems {
     public int icono;
-    public String texto;
+    public String titulo;
+    public String fecha;
+
 
     public lvCalendarioItems(){
         super();
     }
 
-    public lvCalendarioItems(int icono, String texto) {
+    public lvCalendarioItems(int icono, String titulo, String fecha) {
         super();
         this.icono = icono;
-        this.texto = texto;
+        this.titulo = titulo;
+        this.fecha = fecha;
     }
 }

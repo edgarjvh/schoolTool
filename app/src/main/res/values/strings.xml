@@ -9,4 +9,6 @@
     <string name="esta_semana">Esta Semana</string>
     <string name="este_mes">Este Mes</string>
     <string name="este_año">Este Año</string>
+    <string name="iniciandoSesion">Iniciando Sesión. Por favor espere...</string>
+    <string name="bienvenidoCliente">Bienvenido(a)</string>
 </resources>

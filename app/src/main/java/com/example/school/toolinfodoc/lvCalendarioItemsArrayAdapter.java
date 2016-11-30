@@ -36,7 +36,8 @@ public class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItem
 
             holder = new WeatherHolder();
             holder.iconoItem = (ImageView)row.findViewById(R.id.iconoItem);
-            holder.textoItem = (TextView)row.findViewById(R.id.textoItem);
+            holder.tituloItem = (TextView)row.findViewById(R.id.tituloItem);
+            holder.fechaItem = (TextView)row.findViewById(R.id.fechaItem);
 
             row.setTag(holder);
         }
@@ -47,7 +48,8 @@ public class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItem
 
         lvCalendarioItems weather = data[position];
 
-        holder.textoItem.setText(weather.texto);
+        holder.tituloItem.setText(weather.titulo);
+        holder.fechaItem.setText(weather.fecha);
         holder.iconoItem.setImageResource(weather.icono);
 
         return row;
@@ -56,6 +58,7 @@ public class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItem
     private static class WeatherHolder
     {
         ImageView iconoItem;
-        TextView textoItem;
+        TextView tituloItem;
+        TextView fechaItem;
     }
 }
