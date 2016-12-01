@@ -5,13 +5,20 @@ import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.CountDownTimer;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.Button;
+import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.RelativeLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
 import org.json.JSONArray;
@@ -24,6 +31,9 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 import java.util.ArrayList;
 
+import static android.R.attr.width;
+import static com.example.school.toolinfodoc.R.attr.height;
+
 public class Principal extends AppCompatActivity {
 
     Object response = null;
@@ -31,7 +41,12 @@ public class Principal extends AppCompatActivity {
     lvCalendarioItems CalendarioItems[];
     private Representante representante;
     private ListView lvCalendario;
+    private ListView lvMenu;
     private CustomProgress dialogMessage;
+    DrawerLayout drawerLayout;
+    AutoResizeTextView lblSinEventos;
+    int value = 0;
+    View sinEventos;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -39,7 +54,26 @@ public class Principal extends AppCompatActivity {
         setContentView(R.layout.activity_principal);
 
         lvCalendario = (ListView)findViewById(R.id.lvCalendario);
+        lvMenu = (ListView)findViewById(R.id.lvMenu);
+        drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         RadioGroup rgroupOpcionesCalendario = (RadioGroup) findViewById(R.id.rgroupOpcionesCalendario);
+        Button btnMenu = (Button)findViewById(R.id.btnMenu);
+
+        lvCalendario.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
+                TextView title = (TextView)view.findViewById(R.id.tituloItem);
+                mostrarMensaje(false,1,title.getText().toString());
+            }
+        });
+
+        btnMenu.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mostrarOcultarMenu();
+            }
+        });
+
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -49,6 +83,15 @@ public class Principal extends AppCompatActivity {
         AutoResizeTextView lblNombre = (AutoResizeTextView)findViewById(R.id.lblNombre);
         String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" + representante.getApellidos() + ", " + representante.getNombres() + "</font>";
         lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
+
+        lblNombre.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (drawerLayout.isDrawerOpen(lvMenu)){
+                    drawerLayout.closeDrawers();
+                }
+            }
+        });
 
         Resources res = getResources();
 
@@ -70,6 +113,10 @@ public class Principal extends AppCompatActivity {
 
         tabs.setCurrentTab(0);
 
+        sinEventos = findViewById(R.id.emptyView);
+        lblSinEventos = (AutoResizeTextView) sinEventos.findViewById(R.id.lblSinEventos);
+        lvCalendario.setEmptyView(sinEventos);
+
         rgroupOpcionesCalendario.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
@@ -77,7 +124,6 @@ public class Principal extends AppCompatActivity {
                 // This puts the value (true/false) into the variable
 
                 Log.d("radio",rbtn.getText().toString());
-                int value = 0;
 
                 switch (rbtn.getText().toString()){
                     case "Esta Semana" :
@@ -94,13 +140,29 @@ public class Principal extends AppCompatActivity {
                         break;
                 }
 
-                lvCalendario.setAdapter(null);
                 new AsyncCalendario().execute(representante.getId(),value);
             }
         });
 
         mensaje = "Buscando eventos para esta semana. Por favor espere...";
         new AsyncCalendario().execute(representante.getId(), 0);
+    }
+
+    @Override
+    public void onBackPressed() {
+        if (drawerLayout.isDrawerOpen(lvMenu)){
+            mostrarOcultarMenu();
+        }else{
+            moveTaskToBack(true);
+        }
+    }
+
+    public void mostrarOcultarMenu(){
+        if (drawerLayout.isDrawerOpen(lvMenu)) {
+            drawerLayout.closeDrawers();
+        } else {
+            drawerLayout.openDrawer(lvMenu);
+        }
     }
 
     private class AsyncCalendario extends AsyncTask<Object, Integer, Integer> {
@@ -123,21 +185,25 @@ public class Principal extends AppCompatActivity {
 
                 String result = jsonObj.get("Result").toString();
 
-                if (result.equals("OK")){
-                    JSONArray array= jsonObj.getJSONArray("Calendario");
-                    CalendarioItems = new lvCalendarioItems[array.length()];
+                switch (result) {
+                    case "OK":
+                        JSONArray array = jsonObj.getJSONArray("Calendario");
+                        CalendarioItems = new lvCalendarioItems[array.length()];
 
-                    for (int i = 0;i < array.length();i++){
-                        JSONObject evento = array.getJSONObject(i);
-                        CalendarioItems[i] = new lvCalendarioItems(R.drawable.bulb_on,evento.getString("Titulo"),evento.getString("Fecha"));
-                    }
-                    publishProgress(1);
-                }else if (result.equals("NO ROWS")){
-                    mensaje = jsonObj.get("Message").toString();
-                    publishProgress(2);
-                }else{
-                    mensaje = jsonObj.get("Message").toString();
-                    publishProgress(3);
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject evento = array.getJSONObject(i);
+                            CalendarioItems[i] = new lvCalendarioItems(evento.getString("Header"), evento.getInt("Representado"), evento.getInt("Antiguedad"), evento.getString("Titulo"), evento.getString("Fecha"));
+                        }
+                        publishProgress(1);
+                        break;
+                    case "NO ROWS":
+                        mensaje = jsonObj.get("Message").toString();
+                        publishProgress(2);
+                        break;
+                    default:
+                        mensaje = jsonObj.get("Message").toString();
+                        publishProgress(3);
+                        break;
                 }
                 return null;
             } catch (JSONException e) {
@@ -164,9 +230,41 @@ public class Principal extends AppCompatActivity {
                     }
                     break;
                 case 2 :
-                    mostrarMensaje(false,0,mensaje);
+                    switch (value){
+                        case 0:
+                            mensaje = "No hay eventos para esta semana";
+                            break;
+                        case 1:
+                            mensaje = "No hay eventos para este mes";
+                            break;
+                        case 2:
+                            mensaje = "No hay eventos para este año";
+                            break;
+                    }
+                    lblSinEventos.setText(mensaje);
+                    sinEventos.setVisibility(View.VISIBLE);
+                    lvCalendario.setAdapter(null);
+
+                    if (dialogMessage != null){
+                        dialogMessage.dismiss();
+                        dialogMessage = null;
+                    }
                     break;
                 default:
+                    switch (value){
+                        case 0:
+                            mensaje = "No hay eventos para esta semana";
+                            break;
+                        case 1:
+                            mensaje = "No hay eventos para este mes";
+                            break;
+                        case 2:
+                            mensaje = "No hay eventos para este año";
+                            break;
+                    }
+                    lblSinEventos.setText(mensaje);
+                    sinEventos.setVisibility(View.VISIBLE);
+                    lvCalendario.setAdapter(null);
                     mostrarMensaje(false, 2, mensaje);
                     break;
             }
@@ -229,7 +327,7 @@ public class Principal extends AppCompatActivity {
                 dialogMessage.dismiss();
                 dialogMessage = null;
             }
-            dialogMessage = new CustomProgress(Principal.this,Principal.this,enProgreso,icono,msj);
+            dialogMessage = new CustomProgress(Principal.this,enProgreso,icono,msj);
             dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialogMessage.setCanceledOnTouchOutside(true);
             dialogMessage.show();
@@ -239,7 +337,7 @@ public class Principal extends AppCompatActivity {
                 dialogMessage = null;
             }
 
-            dialogMessage = new CustomProgress(Principal.this,Principal.this,enProgreso,icono,msj);
+            dialogMessage = new CustomProgress(Principal.this,enProgreso,icono,msj);
             dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialogMessage.setCanceledOnTouchOutside(true);
             dialogMessage.show();

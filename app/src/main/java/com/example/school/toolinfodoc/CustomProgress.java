@@ -2,28 +2,26 @@ package com.example.school.toolinfodoc;
 
 import android.app.Activity;
 import android.app.Dialog;
-import android.content.Context;
-import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-public class CustomProgress extends Dialog{
+class CustomProgress extends Dialog{
 
     private Boolean inProgress;
     private int icono;
     private String mensaje;
-    private Activity b;
+    //private Activity b;
 
-    CustomProgress(Activity a, Context context, Boolean inProgress, int icono, String mensaje){
+    CustomProgress(Activity a, Boolean inProgress, int icono, String mensaje){
         super(a);
 
         this.inProgress = inProgress;
         this.icono = icono;
         this.mensaje = mensaje;
-        this.b = a;
+        //this.b = a;
     }
 
     @Override

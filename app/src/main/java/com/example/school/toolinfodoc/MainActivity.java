@@ -82,12 +82,12 @@ public class MainActivity extends Activity {
                     JSONObject array = new JSONObject(json.get("Representante").toString());
                     representante = new Representante();
                     representante.setId(array.getInt("Id"));
-                    representante.setCedula(array.getInt("Cedula"));
+                    //representante.setCedula(array.getInt("Cedula"));
                     representante.setNombres(array.get("Nombres").toString());
                     representante.setApellidos(array.get("Apellidos").toString());
-                    representante.setTelefono1(array.getInt("Telefono1"));
-                    representante.setTelefono2(array.getInt("Telefono2"));
-                    representante.setDireccion(array.get("Direccion").toString());
+                    //representante.setTelefono1(array.getInt("Telefono1"));
+                    //representante.setTelefono2(array.getInt("Telefono2"));
+                    //representante.setDireccion(array.get("Direccion").toString());
                     publishProgress(1);
                     return 1;
                 }else{
@@ -183,7 +183,7 @@ public class MainActivity extends Activity {
                     dialogMessage = null;
                 }
 
-                dialogMessage = new CustomProgress(MainActivity.this, MainActivity.this,enProgreso,icono,msj);
+                dialogMessage = new CustomProgress(MainActivity.this,enProgreso,icono,msj);
                 dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 dialogMessage.setCanceledOnTouchOutside(false);
                 dialogMessage.show();
@@ -213,7 +213,7 @@ public class MainActivity extends Activity {
                         dialogMessage = null;
                     }
 
-                    dialogMessage = new CustomProgress(MainActivity.this,MainActivity.this,enProgreso,icono, msj);
+                    dialogMessage = new CustomProgress(MainActivity.this,enProgreso,icono, msj);
                     dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     dialogMessage.setCanceledOnTouchOutside(true);
                     dialogMessage.show();
@@ -223,7 +223,7 @@ public class MainActivity extends Activity {
                         dialogMessage = null;
                     }
 
-                    dialogMessage = new CustomProgress(MainActivity.this,MainActivity.this,enProgreso,icono,msj);
+                    dialogMessage = new CustomProgress(MainActivity.this,enProgreso,icono,msj);
                     dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     dialogMessage.setCanceledOnTouchOutside(true);
                     dialogMessage.show();

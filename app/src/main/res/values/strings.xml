@@ -11,4 +11,5 @@
     <string name="este_año">Este Año</string>
     <string name="iniciandoSesion">Iniciando Sesión. Por favor espere...</string>
     <string name="bienvenidoCliente">Bienvenido(a)</string>
+    <string name="lista_sin_eventos">Sin eventos para mostrar</string>
 </resources>

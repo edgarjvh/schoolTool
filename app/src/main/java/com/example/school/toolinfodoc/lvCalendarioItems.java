@@ -1,23 +1,18 @@
 package com.example.school.toolinfodoc;
 
-/**
- * Created by Edgar Villasmil on 28/11/2016.
- */
+class lvCalendarioItems {
+    int icono;
+    String header;
+    String titulo;
+    String fecha;
+    int antiguedad;
 
-public class lvCalendarioItems {
-    public int icono;
-    public String titulo;
-    public String fecha;
-
-
-    public lvCalendarioItems(){
-        super();
-    }
-
-    public lvCalendarioItems(int icono, String titulo, String fecha) {
+    lvCalendarioItems(String header, int icono, int antiguedad, String titulo, String fecha) {
         super();
         this.icono = icono;
+        this.header = header;
         this.titulo = titulo;
         this.fecha = fecha;
+        this.antiguedad = antiguedad;
     }
 }
