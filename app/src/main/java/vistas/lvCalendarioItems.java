@@ -1,13 +1,13 @@
-package com.example.school.toolinfodoc;
+package vistas;
 
-class lvCalendarioItems {
+public class lvCalendarioItems {
     int icono;
     String header;
     String titulo;
     String fecha;
     int antiguedad;
 
-    lvCalendarioItems(String header, int icono, int antiguedad, String titulo, String fecha) {
+    public lvCalendarioItems(String header, int icono, int antiguedad, String titulo, String fecha) {
         super();
         this.icono = icono;
         this.header = header;

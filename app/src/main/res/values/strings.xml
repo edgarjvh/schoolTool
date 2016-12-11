@@ -12,4 +12,6 @@
     <string name="iniciandoSesion">Iniciando Sesión. Por favor espere...</string>
     <string name="bienvenidoCliente">Bienvenido(a)</string>
     <string name="lista_sin_eventos">Sin eventos para mostrar</string>
+    <string name="escriba_su_mensaje">escriba su mensaje</string>
+    <string name="docentes">Docentes</string>
 </resources>

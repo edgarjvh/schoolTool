@@ -1,4 +1,4 @@
-package com.example.school.toolinfodoc;
+package vistas;
 
 import android.app.Activity;
 import android.content.Context;
@@ -11,13 +11,15 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItems> {
+import com.example.school.toolinfodoc.R;
+
+public class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItems> {
 
     private Context context;
     private int layoutResourceId;
     private lvCalendarioItems[] data = null;
 
-    lvCalendarioItemsArrayAdapter(Context context, int layoutResourceId, lvCalendarioItems[] data) {
+    public lvCalendarioItemsArrayAdapter(Context context, int layoutResourceId, lvCalendarioItems[] data) {
         super(context, layoutResourceId, data);
         this.layoutResourceId = layoutResourceId;
         this.context = context;

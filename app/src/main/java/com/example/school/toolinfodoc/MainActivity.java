@@ -20,6 +20,9 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 import java.util.ArrayList;
 
+import clases.Representante;
+import vistas.CustomProgress;
+
 public class MainActivity extends Activity {
 
     Object response = null;
@@ -134,7 +137,7 @@ public class MainActivity extends Activity {
         Object getData(ArrayList<Object> parametros){
             Object data;
             String namespace = "http://schooltool.org/";
-            String direccion = "http://cctv.zuprevencion.org:9650/schooltoolws.asmx";
+            String direccion = "http://154.42.65.212:9600/schooltool.asmx";
             String metodo = parametros.get(parametros.size() - 1).toString();
             String soapAction = namespace + metodo;
 

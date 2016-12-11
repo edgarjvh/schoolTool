@@ -10,15 +10,12 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
-import android.view.Gravity;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
-import android.widget.RelativeLayout;
 import android.widget.TabHost;
 import android.widget.TextView;
 import org.json.JSONArray;
@@ -31,8 +28,11 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 import java.util.ArrayList;
 
-import static android.R.attr.width;
-import static com.example.school.toolinfodoc.R.attr.height;
+import clases.Representante;
+import controles.AutoResizeTextView;
+import vistas.CustomProgress;
+import vistas.lvCalendarioItems;
+import vistas.lvCalendarioItemsArrayAdapter;
 
 public class Principal extends AppCompatActivity {
 
@@ -280,7 +280,7 @@ public class Principal extends AppCompatActivity {
         Object getData(ArrayList<Object> parametros){
             Object data;
             String namespace = "http://schooltool.org/";
-            String direccion = "http://cctv.zuprevencion.org:9650/schooltoolws.asmx";
+            String direccion = "http://154.42.65.212:9600/schooltool.asmx";
             String metodo = parametros.get(parametros.size() - 1).toString();
             String soapAction = namespace + metodo;
 

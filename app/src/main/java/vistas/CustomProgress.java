@@ -1,4 +1,4 @@
-package com.example.school.toolinfodoc;
+package vistas;
 
 import android.app.Activity;
 import android.app.Dialog;
@@ -8,14 +8,16 @@ import android.view.Window;
 import android.widget.ImageView;
 import android.widget.TextView;
 
-class CustomProgress extends Dialog{
+import com.example.school.toolinfodoc.R;
+
+public class CustomProgress extends Dialog{
 
     private Boolean inProgress;
     private int icono;
     private String mensaje;
     //private Activity b;
 
-    CustomProgress(Activity a, Boolean inProgress, int icono, String mensaje){
+    public CustomProgress(Activity a, Boolean inProgress, int icono, String mensaje){
         super(a);
 
         this.inProgress = inProgress;

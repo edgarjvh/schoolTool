@@ -1,4 +1,4 @@
-package com.example.school.toolinfodoc;
+package controles;
 
 import android.content.Context;
 import android.text.Layout.Alignment;

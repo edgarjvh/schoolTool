@@ -27,4 +27,6 @@ dependencies {
     compile 'com.android.support:appcompat-v7:25.0.1'
     testCompile 'junit:junit:4.12'
     compile files('libs/ksoap2-android-assembly-3.4.0-jar-with-dependencies.jar')
+    compile files('libs/bolts-tasks-1.4.0.jar')
+    compile files('libs/Parse-1.13.0.jar')
 }
