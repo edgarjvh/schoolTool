@@ -2,9 +2,24 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="10dp"
     android:descendantFocusability="blocksDescendants"
-    android:layout_marginBottom="20dp">
+    android:layout_marginBottom="10dp">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/lblHeader"
+        android:textSize="12sp"
+        android:textColor="#000000"
+        android:textStyle="bold|italic"
+        android:textAlignment="center"
+        android:background="@drawable/msgheaderbackground"
+        android:layout_marginLeft="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginRight="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="5dp"
+        android:visibility="gone"/>
 
     <RelativeLayout
         android:layout_width="match_parent"
@@ -14,12 +29,15 @@
         android:layout_marginEnd="10dp"
         android:layout_marginLeft="75dp"
         android:layout_marginStart="75dp"
-        android:padding="5dp">
+        android:layout_marginBottom="5dp"
+        android:padding="5dp"
+        android:layout_below="@+id/lblHeader">
 
         <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
+            android:layout_width="16dp"
+            android:layout_height="16dp"
             android:id="@+id/imgStatus"
+            android:scaleType="centerInside"
             android:contentDescription="@string/app_name"
             android:layout_alignParentTop="true"
             android:layout_alignParentRight="true"
@@ -29,8 +47,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_toLeftOf="@+id/imgStatus"
-            android:layout_toStartOf="@+id/imgStatus"
             android:layout_marginRight="5dp"
             android:layout_marginEnd="5dp">
 
@@ -41,7 +57,7 @@
                 android:textSize="12sp"
                 android:textColor="#21233F"
                 android:textStyle="italic"
-                android:layout_marginBottom="10dp"
+                android:layout_marginBottom="5dp"
                 android:maxLines="1"/>
 
             <TextView

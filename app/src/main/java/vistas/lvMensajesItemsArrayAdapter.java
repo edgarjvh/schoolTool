@@ -1,42 +1,47 @@
 package vistas;
 
 import android.content.Context;
-import android.media.Image;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.example.school.toolinfodoc.R;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collections;
+import java.util.Date;
+import java.util.Locale;
 
 public class lvMensajesItemsArrayAdapter extends BaseAdapter {
 
-    ArrayList<lvMensajesItems> items;
-    Context c;
-    LayoutInflater inflater;
-    static final int ROW_DOC = 0;
-    static final int ROW_REP = 1;
-    static final int HEADER = 2;
-    static final int STATUS_SENT = 0;
-    static final int STATUS_RECEIVED = 1;
-    static final int STATUS_READ = 2;
+    private ArrayList<lvMensajesItems> data;
+    private Context c;
+    private static final int ROW_DOC = 0;
+    private static final int ROW_REP = 1;
+    private static final int STATUS_SENT = 0;
+    private static final int STATUS_RECEIVED = 1;
+    private static final int STATUS_READ = 2;
+    private String lastHeader = "";
+    private String tempHeader = "";
 
-    public lvMensajesItemsArrayAdapter(Context c, ArrayList<lvMensajesItems> items){
+    public lvMensajesItemsArrayAdapter(Context c, ArrayList<lvMensajesItems> data){
         this.c = c;
-        this.items = items;
+        this.data = data;
     }
 
     @Override
     public int getCount() {
-        return items.size();
+        return data.size();
     }
 
     @Override
     public Object getItem(int i) {
-        return items.get(i);
+        return data.get(i);
     }
 
     @Override
@@ -47,30 +52,25 @@ public class lvMensajesItemsArrayAdapter extends BaseAdapter {
     @Override
     public int getItemViewType(int position) {
         lvMensajesItems item = (lvMensajesItems)getItem(position);
-
-        if (item.header.equals("")){
-            return item.tipo == 0 ? ROW_DOC : ROW_REP;
-        }
-        return HEADER;
+        return item.getVia() == ROW_DOC ? ROW_DOC : ROW_REP;
     }
 
     @Override
     public int getViewTypeCount() {
-        return 3;
+        return 2;
     }
 
     @Override
     public View getView(int pos, View convertView, ViewGroup parent) {
         int type = getItemViewType(pos);
         lvMensajesItems msj = (lvMensajesItems)getItem(pos);
+        TextView lblHeader;
         TextView lblFechaHora;
         TextView lblMensaje;
         ImageView imgStatus;
-        TextView lblHeader;
-
 
         if (convertView == null){
-            inflater = (LayoutInflater)c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+            LayoutInflater inflater = (LayoutInflater) c.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
             switch (type){
                 case ROW_DOC:
@@ -81,31 +81,70 @@ public class lvMensajesItemsArrayAdapter extends BaseAdapter {
                     convertView = inflater.inflate(R.layout.lvmensajefromrepitem,null);
                     break;
 
-                case HEADER:
-                    convertView = inflater.inflate(R.layout.lvmensajeheaderitem,null);
-                    break;
-
                 default:
                     break;
             }
         }
 
+        Calendar hoy = Calendar.getInstance(); // hoy
+        hoy.add(Calendar.HOUR_OF_DAY, -4);
+
+        Calendar ayer = Calendar.getInstance(); // hoy
+        ayer.add(Calendar.HOUR_OF_DAY, -4);
+        ayer.add(Calendar.DAY_OF_YEAR, -1);
+
+        Calendar fecha = Calendar.getInstance(); // fecha
+        fecha.setTime(new Date(msj.getFechaHora()));
+        fecha.add(Calendar.HOUR_OF_DAY, -4);
+
+        SimpleDateFormat df1 = new SimpleDateFormat("dd-MM-yyyy");
+        SimpleDateFormat df2 = new SimpleDateFormat("hh:mm:ss aaa");
+
+        int visibility = View.GONE;
+
+        if(df1.format(hoy.getTime()).equals(df1.format(fecha.getTime()))){
+            tempHeader = "Hoy";
+        }else if (df1.format(ayer.getTime()).equals(df1.format(fecha.getTime()))){
+            tempHeader = "Ayer";
+        }else{
+            df1 = new SimpleDateFormat("EEEE, dd 'de' MMMM 'de' yyyy", new Locale("es", "ES"));
+            tempHeader = df1.format(fecha.getTime());
+        }
+
+        if (lastHeader.equals("")){
+            lastHeader = tempHeader;
+            visibility = View.VISIBLE;
+        }else{
+            if (lastHeader.equals(tempHeader)){
+                visibility = View.GONE;
+            }else{
+                visibility = View.VISIBLE;
+                lastHeader = tempHeader;
+            }
+        }
+
         switch (type){
             case ROW_DOC:
+                lblHeader = (TextView) convertView.findViewById(R.id.lblHeader);
                 lblFechaHora = (TextView)convertView.findViewById(R.id.lblFechaHora);
                 lblMensaje = (TextView)convertView.findViewById(R.id.lblMensaje);
 
-                lblFechaHora.setText(msj.getFechaHora());
+                lblHeader.setText(lastHeader);
+                lblHeader.setVisibility(visibility);
+                lblFechaHora.setText(df2.format(fecha.getTime()));
                 lblMensaje.setText(msj.getMensaje());
 
                 break;
 
             case ROW_REP:
+                lblHeader = (TextView) convertView.findViewById(R.id.lblHeader);
                 lblFechaHora = (TextView)convertView.findViewById(R.id.lblFechaHora);
                 lblMensaje = (TextView)convertView.findViewById(R.id.lblMensaje);
                 imgStatus = (ImageView)convertView.findViewById(R.id.imgStatus);
 
-                lblFechaHora.setText(msj.getFechaHora());
+                lblHeader.setText(lastHeader);
+                lblHeader.setVisibility(visibility);
+                lblFechaHora.setText(df2.format(fecha.getTime()));
                 lblMensaje.setText(msj.getMensaje());
 
                 switch (msj.getStatus()){
@@ -124,15 +163,12 @@ public class lvMensajesItemsArrayAdapter extends BaseAdapter {
 
                 break;
 
-            case HEADER:
-                lblHeader = (TextView)convertView.findViewById(R.id.lblHeader);
-                lblHeader.setText(msj.getHeader());
-                break;
-
             default:
                 break;
         }
 
         return convertView;
     }
+
+
 }

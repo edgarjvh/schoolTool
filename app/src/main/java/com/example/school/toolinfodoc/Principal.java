@@ -11,8 +11,10 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
@@ -26,38 +28,69 @@ import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
+
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.TimeZone;
 
 import clases.Representante;
 import controles.AutoResizeTextView;
 import vistas.CustomProgress;
 import vistas.lvCalendarioItems;
 import vistas.lvCalendarioItemsArrayAdapter;
+import vistas.lvMensajesItems;
+import vistas.lvMensajesItemsArrayAdapter;
 
 public class Principal extends AppCompatActivity {
 
     Object response = null;
     String mensaje = "";
     lvCalendarioItems CalendarioItems[];
+    ArrayList<lvMensajesItems> MensajesItems;
     private Representante representante;
     private ListView lvCalendario;
     private ListView lvMenu;
+    private ListView lvMensajes;
     private CustomProgress dialogMessage;
     DrawerLayout drawerLayout;
     AutoResizeTextView lblSinEventos;
     int value = 0;
     View sinEventos;
+    lvMensajesItemsArrayAdapter adapter;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_principal);
+        MensajesItems = new ArrayList<>();
 
         lvCalendario = (ListView)findViewById(R.id.lvCalendario);
+        lvMensajes = (ListView)findViewById(R.id.lvMensajes);
         lvMenu = (ListView)findViewById(R.id.lvMenu);
         drawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         RadioGroup rgroupOpcionesCalendario = (RadioGroup) findViewById(R.id.rgroupOpcionesCalendario);
         Button btnMenu = (Button)findViewById(R.id.btnMenu);
+        Button btnEnviarMensaje = (Button)findViewById(R.id.btnEnviarMensaje);
+        final EditText txtMensaje = (EditText)findViewById(R.id.txtMensaje);
+
+        btnEnviarMensaje.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                for (int i = 0; i < MensajesItems.size(); i++){
+                    if (MensajesItems.get(i).getIdMensaje() == 3){
+                        MensajesItems.get(i).setStatus(Integer.parseInt(txtMensaje.getText().toString()));
+                        adapter.notifyDataSetChanged();
+                        break;
+                    }
+                }
+
+                //MensajesItems.add(new lvMensajesItems(25,1,1,Calendar.getInstance().getTimeInMillis(),txtMensaje.getText().toString()));
+                //lvMensajes.setSelection(MensajesItems.size() -1);
+            }
+        });
 
         lvCalendario.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -141,11 +174,13 @@ public class Principal extends AppCompatActivity {
                 }
 
                 new AsyncCalendario().execute(representante.getId(),value);
+
             }
         });
 
         mensaje = "Buscando eventos para esta semana. Por favor espere...";
         new AsyncCalendario().execute(representante.getId(), 0);
+        new AsyncMensajes().execute(representante.getId(),0,0);
     }
 
     @Override
@@ -162,6 +197,80 @@ public class Principal extends AppCompatActivity {
             drawerLayout.closeDrawers();
         } else {
             drawerLayout.openDrawer(lvMenu);
+        }
+    }
+
+    private class AsyncMensajes extends AsyncTask<Object,Integer, Integer>{
+
+        @Override
+        protected Integer doInBackground(Object... params) {
+            publishProgress(0);
+            ArrayList<Object>  parametros = new ArrayList<>(4);
+            parametros.add(0, "idRepresentante*" + params[0]);
+            parametros.add(1, "estado*"+ params[1]);
+            parametros.add(2, "limite*"+ params[2]);
+            parametros.add(3, "getMensajesRep");
+
+            respuesta ws = new respuesta();
+            response = ws.getData(parametros);
+
+            //Log.d("EJVH MSJ", response.getClass().toString());
+            //Log.d("EJVH MSJ", response.toString());
+
+            try
+            {
+                JSONObject jsonObj = new JSONObject(response.toString());
+
+                String result = jsonObj.get("Result").toString();
+
+                switch (result) {
+                    case "OK":
+                        JSONArray array = jsonObj.getJSONArray("Mensajes");
+
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject mensaje = array.getJSONObject(i);
+                            String value = "";
+
+                            if (mensaje.get("fechaHora").toString().matches("^/Date\\(\\d+\\)/$")) {
+                                value = mensaje.get("fechaHora").toString().replaceAll("^/Date\\((\\d+)\\)/$", "$1");
+                            }
+
+                            MensajesItems.add(new lvMensajesItems(
+                                    mensaje.getInt("IdMensaje"),
+                                    mensaje.getInt("Via"),
+                                    mensaje.getInt("Estado"),
+                                    Long.parseLong(value),
+                                    mensaje.getString("Texto")
+                            ));
+                        }
+                        publishProgress(1);
+                        break;
+                    case "NO ROWS":
+                        mensaje = jsonObj.get("Message").toString();
+                        publishProgress(2);
+                        break;
+                    default:
+                        mensaje = jsonObj.get("Message").toString();
+                        publishProgress(3);
+                        break;
+                }
+                return null;
+
+            }
+            catch (JSONException e) {
+                mensaje = e.getMessage();
+                publishProgress(4);
+                return null;
+            }
+
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            if (values[0] == 1){
+                adapter = new lvMensajesItemsArrayAdapter(Principal.this,MensajesItems);
+                lvMensajes.setAdapter(adapter);
+            }
         }
     }
 
@@ -285,23 +394,15 @@ public class Principal extends AppCompatActivity {
             String soapAction = namespace + metodo;
 
             SoapObject request = new SoapObject(namespace, metodo);
+            String property[];
+            PropertyInfo pi;
 
-            if (parametros.size() > 0){
-                String property[];
-                PropertyInfo pi;
-
-                property = parametros.get(0).toString().split("\\*");
+            for (int i = 0; i < parametros.size() - 1; i++){
+                property = parametros.get(i).toString().split("\\*");
                 pi = new PropertyInfo();
                 pi.setName(property[0]);
                 pi.setValue(property[1]);
-                pi.setType(Integer.class);
-                request.addProperty(pi);
-
-                property = parametros.get(1).toString().split("\\*");
-                pi = new PropertyInfo();
-                pi.setName(property[0]);
-                pi.setValue(property[1]);
-                pi.setType(Integer.class);
+                pi.setType(property[1].getClass());
                 request.addProperty(pi);
             }
 

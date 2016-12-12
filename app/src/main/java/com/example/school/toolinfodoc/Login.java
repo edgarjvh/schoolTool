@@ -23,7 +23,7 @@ import java.util.ArrayList;
 import clases.Representante;
 import vistas.CustomProgress;
 
-public class MainActivity extends Activity {
+public class Login extends Activity {
 
     Object response = null;
     String mensaje = "";
@@ -186,7 +186,7 @@ public class MainActivity extends Activity {
                     dialogMessage = null;
                 }
 
-                dialogMessage = new CustomProgress(MainActivity.this,enProgreso,icono,msj);
+                dialogMessage = new CustomProgress(Login.this,enProgreso,icono,msj);
                 dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 dialogMessage.setCanceledOnTouchOutside(false);
                 dialogMessage.show();
@@ -198,7 +198,7 @@ public class MainActivity extends Activity {
 
                     @Override
                     public void onFinish() {
-                        Intent i = new Intent(MainActivity.this, Principal.class);
+                        Intent i = new Intent(Login.this, Principal.class);
                         i.putExtra("Representante",representante);
                         startActivity(i);
 
@@ -216,7 +216,7 @@ public class MainActivity extends Activity {
                         dialogMessage = null;
                     }
 
-                    dialogMessage = new CustomProgress(MainActivity.this,enProgreso,icono, msj);
+                    dialogMessage = new CustomProgress(Login.this,enProgreso,icono, msj);
                     dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     dialogMessage.setCanceledOnTouchOutside(true);
                     dialogMessage.show();
@@ -226,7 +226,7 @@ public class MainActivity extends Activity {
                         dialogMessage = null;
                     }
 
-                    dialogMessage = new CustomProgress(MainActivity.this,enProgreso,icono,msj);
+                    dialogMessage = new CustomProgress(Login.this,enProgreso,icono,msj);
                     dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     dialogMessage.setCanceledOnTouchOutside(true);
                     dialogMessage.show();

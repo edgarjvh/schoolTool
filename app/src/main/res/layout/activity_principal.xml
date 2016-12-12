@@ -126,17 +126,6 @@
                                     android:layout_marginEnd="5dp"
                                     android:background="@drawable/send_message_icon"/>
 
-                                <ListView
-                                    android:layout_width="match_parent"
-                                    android:layout_height="match_parent"
-                                    android:id="@+id/lvMensajes"
-                                    android:background="#20000000"
-                                    android:layout_alignParentTop="true"
-                                    android:layout_above="@+id/txtMensaje"
-                                    android:layout_marginBottom="10dp">
-
-                                </ListView>
-
                                 <EditText
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
@@ -162,7 +151,24 @@
                                     android:layout_alignBottom="@+id/btnEnviarMensaje"
                                     android:layout_alignParentLeft="true"
                                     android:layout_alignParentStart="true"
-                                    android:scrollbars="vertical"/>
+                                    android:scrollbars="vertical"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_alignParentEnd="true" />
+
+                                <ListView
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:id="@+id/lvMensajes"
+                                    android:background="#20000000"
+                                    android:dividerHeight="0dp"
+                                    android:layout_alignParentTop="true"
+                                    android:layout_alignParentLeft="true"
+                                    android:layout_alignParentStart="true"
+                                    android:layout_above="@+id/txtMensaje"
+                                    android:layout_marginBottom="5dp"
+                                    android:paddingTop="5dp">
+
+                                </ListView>
                             </RelativeLayout>
 
                         </RelativeLayout>
