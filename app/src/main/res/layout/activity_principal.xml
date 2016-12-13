@@ -98,12 +98,14 @@
                                 <Spinner
                                     android:layout_width="match_parent"
                                     android:layout_height="match_parent"
-                                    android:id="@+id/cboContactos"
-                                    android:layout_toRightOf="@+id/lblDocentes"
+                                    android:id="@+id/cboDocentes"
+                                    android:layout_alignParentTop="true"
+                                    android:layout_alignParentRight="true"
+                                    android:layout_alignParentEnd="true"
                                     android:layout_toEndOf="@+id/lblDocentes"
-                                    android:layout_marginLeft="5dp"
-                                    android:layout_marginStart="5dp"
-                                    android:background="#60FFFFFF">
+                                    android:layout_toRightOf="@+id/lblDocentes"
+                                    android:layout_marginStart="10dp"
+                                    android:layout_marginLeft="10dp">
 
                                 </Spinner>
                             </RelativeLayout>
@@ -161,16 +163,14 @@
                                     android:id="@+id/lvMensajes"
                                     android:background="#20000000"
                                     android:dividerHeight="0dp"
+                                    android:paddingTop="5dp"
                                     android:layout_alignParentTop="true"
                                     android:layout_alignParentLeft="true"
                                     android:layout_alignParentStart="true"
                                     android:layout_above="@+id/txtMensaje"
-                                    android:layout_marginBottom="5dp"
-                                    android:paddingTop="5dp">
-
+                                    android:layout_marginBottom="5dp">
                                 </ListView>
                             </RelativeLayout>
-
                         </RelativeLayout>
 
                         <LinearLayout

@@ -18,6 +18,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
 import org.json.JSONArray;
@@ -38,6 +39,8 @@ import java.util.TimeZone;
 import clases.Representante;
 import controles.AutoResizeTextView;
 import vistas.CustomProgress;
+import vistas.SpinnerItems;
+import vistas.SpinnerItemsArrayAdapter;
 import vistas.lvCalendarioItems;
 import vistas.lvCalendarioItemsArrayAdapter;
 import vistas.lvMensajesItems;
@@ -49,6 +52,7 @@ public class Principal extends AppCompatActivity {
     String mensaje = "";
     lvCalendarioItems CalendarioItems[];
     ArrayList<lvMensajesItems> MensajesItems;
+    ArrayList<SpinnerItems> spinnerItems;
     private Representante representante;
     private ListView lvCalendario;
     private ListView lvMenu;
@@ -59,13 +63,15 @@ public class Principal extends AppCompatActivity {
     int value = 0;
     View sinEventos;
     lvMensajesItemsArrayAdapter adapter;
-
+    SpinnerItemsArrayAdapter spinnerAdapter;
+    Spinner cboDocentes;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_principal);
         MensajesItems = new ArrayList<>();
+        spinnerItems = new ArrayList<>();
 
         lvCalendario = (ListView)findViewById(R.id.lvCalendario);
         lvMensajes = (ListView)findViewById(R.id.lvMensajes);
@@ -75,6 +81,20 @@ public class Principal extends AppCompatActivity {
         Button btnMenu = (Button)findViewById(R.id.btnMenu);
         Button btnEnviarMensaje = (Button)findViewById(R.id.btnEnviarMensaje);
         final EditText txtMensaje = (EditText)findViewById(R.id.txtMensaje);
+        cboDocentes = (Spinner) findViewById(R.id.cboDocentes);
+
+        cboDocentes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
+                TextView lblIdDocente = (TextView)view.findViewById(R.id.lblIdDocente);
+                new AsyncMensajes().execute(representante.getId(),Integer.parseInt(lblIdDocente.getText().toString()),0,0);
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> adapterView) {
+
+            }
+        });
 
         btnEnviarMensaje.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -95,8 +115,8 @@ public class Principal extends AppCompatActivity {
         lvCalendario.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView title = (TextView)view.findViewById(R.id.tituloItem);
-                mostrarMensaje(false,1,title.getText().toString());
+                TextView descripcion = (TextView)view.findViewById(R.id.lblDescripcion);
+                mostrarMensaje(false,1,descripcion.getText().toString());
             }
         });
 
@@ -106,7 +126,6 @@ public class Principal extends AppCompatActivity {
                 mostrarOcultarMenu();
             }
         });
-
 
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
@@ -180,7 +199,8 @@ public class Principal extends AppCompatActivity {
 
         mensaje = "Buscando eventos para esta semana. Por favor espere...";
         new AsyncCalendario().execute(representante.getId(), 0);
-        new AsyncMensajes().execute(representante.getId(),0,0);
+        //new AsyncMensajes().execute(representante.getId(),0,0);
+        new AsyncDocentes().execute(representante.getId());
     }
 
     @Override
@@ -200,16 +220,94 @@ public class Principal extends AppCompatActivity {
         }
     }
 
+    private class AsyncDocentes extends AsyncTask<Object,Integer, Integer>{
+
+        @Override
+        protected Integer doInBackground(Object... params) {
+            publishProgress(0);
+            ArrayList<Object>  parametros = new ArrayList<>(2);
+            parametros.add(0, "idRepresentante*" + params[0]);
+            parametros.add(1, "getDocentes");
+
+            respuesta ws = new respuesta();
+            response = ws.getData(parametros);
+
+            Log.d("EJVH DOC", response.getClass().toString());
+            Log.d("EJVH DOC", response.toString());
+
+            try
+            {
+                JSONObject jsonObj = new JSONObject(response.toString());
+
+                String result = jsonObj.get("Result").toString();
+
+                switch (result) {
+                    case "OK":
+                        JSONArray array = jsonObj.getJSONArray("Docentes");
+
+                        for (int i = 0; i < array.length(); i++) {
+                            JSONObject docente = array.getJSONObject(i);
+
+                            Log.d("EJVH idDocente", Integer.toString(docente.getInt("Id")));
+
+                            spinnerItems.add(new SpinnerItems(
+                                    docente.getInt("Id"),
+                                    docente.getString("Apellidos"),
+                                    docente.getString("Nombres")
+                            ));
+                        }
+                        publishProgress(1);
+                        break;
+                    case "NO ROWS":
+                        mensaje = jsonObj.get("Message").toString();
+                        publishProgress(2);
+                        break;
+                    default:
+                        mensaje = jsonObj.get("Message").toString();
+                        publishProgress(3);
+                        break;
+                }
+                return null;
+            }
+            catch (JSONException e) {
+                mensaje = e.getMessage();
+                publishProgress(4);
+                return null;
+            }
+        }
+
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            super.onProgressUpdate(values);
+
+            if (values[0] == 1){
+                spinnerAdapter = new SpinnerItemsArrayAdapter(Principal.this,spinnerItems);
+                cboDocentes.setAdapter(spinnerAdapter);
+                cboDocentes.setSelection(0);
+
+                cboDocentes.post(new Runnable() {
+                    @Override
+                    public void run() {
+                        int lblIdDocente = Integer.parseInt (((TextView)cboDocentes.getSelectedView().findViewById(R.id.lblIdDocente)).getText().toString());
+                        new AsyncMensajes().execute(representante.getId(),lblIdDocente,0,0);
+                    }
+                });
+            }
+        }
+    }
+
     private class AsyncMensajes extends AsyncTask<Object,Integer, Integer>{
 
         @Override
         protected Integer doInBackground(Object... params) {
             publishProgress(0);
-            ArrayList<Object>  parametros = new ArrayList<>(4);
+            MensajesItems.clear();
+            ArrayList<Object>  parametros = new ArrayList<>(5);
             parametros.add(0, "idRepresentante*" + params[0]);
-            parametros.add(1, "estado*"+ params[1]);
-            parametros.add(2, "limite*"+ params[2]);
-            parametros.add(3, "getMensajesRep");
+            parametros.add(1, "idDocente*" + params[1]);
+            parametros.add(2, "estado*"+ params[2]);
+            parametros.add(3, "limite*"+ params[3]);
+            parametros.add(4, "getMensajesRep");
 
             respuesta ws = new respuesta();
             response = ws.getData(parametros);
@@ -269,7 +367,11 @@ public class Principal extends AppCompatActivity {
         protected void onProgressUpdate(Integer... values) {
             if (values[0] == 1){
                 adapter = new lvMensajesItemsArrayAdapter(Principal.this,MensajesItems);
+                lvMensajes.setAdapter(null);
                 lvMensajes.setAdapter(adapter);
+            }
+            if (values[0] == 2){
+                lvMensajes.setAdapter(null);
             }
         }
     }
@@ -301,7 +403,13 @@ public class Principal extends AppCompatActivity {
 
                         for (int i = 0; i < array.length(); i++) {
                             JSONObject evento = array.getJSONObject(i);
-                            CalendarioItems[i] = new lvCalendarioItems(evento.getString("Header"), evento.getInt("Representado"), evento.getInt("Antiguedad"), evento.getString("Titulo"), evento.getString("Fecha"));
+                            CalendarioItems[i] = new lvCalendarioItems(
+                                    evento.getString("Header"),
+                                    evento.getInt("Representado"),
+                                    evento.getInt("Antiguedad"),
+                                    evento.getString("Titulo"),
+                                    evento.getString("Fecha"),
+                                    evento.getString("Descripcion"));
                         }
                         publishProgress(1);
                         break;
@@ -442,7 +550,7 @@ public class Principal extends AppCompatActivity {
             dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialogMessage.setCanceledOnTouchOutside(true);
             dialogMessage.show();
-            CountDownTimer timer = new CountDownTimer(3000,1000) {
+            CountDownTimer timer = new CountDownTimer(5000,1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
                 }

@@ -57,8 +57,7 @@
                 android:textSize="16sp"
                 android:textColor="#001bcc"
                 android:layout_marginTop="5dp"
-                android:layout_marginBottom="5dp"
-                />
+                android:layout_marginBottom="5dp" />
 
             <TextView android:id="@+id/fechaItem"
                 android:layout_width="fill_parent"
@@ -68,8 +67,12 @@
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:textColor="#7c0103"
-                android:layout_marginTop="5dp"
                 android:layout_marginBottom="5dp" />
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:id="@+id/lblDescripcion"
+                android:visibility="gone"/>
         </LinearLayout>
     </RelativeLayout>
 </RelativeLayout>

@@ -64,6 +64,7 @@ public class lvMensajesItemsArrayAdapter extends BaseAdapter {
     public View getView(int pos, View convertView, ViewGroup parent) {
         int type = getItemViewType(pos);
         lvMensajesItems msj = (lvMensajesItems)getItem(pos);
+
         TextView lblHeader;
         TextView lblFechaHora;
         TextView lblMensaje;

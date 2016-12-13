@@ -43,7 +43,7 @@ public class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItem
             holder.fechaItem = (TextView)row.findViewById(R.id.fechaItem);
             holder.header = (TextView)row.findViewById(R.id.lblHeader);
             holder.relContent = row.findViewById(R.id.relContent);
-
+            holder.descripcion = (TextView)row.findViewById(R.id.lblDescripcion);
             row.setTag(holder);
         }
         else
@@ -55,6 +55,7 @@ public class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItem
 
         holder.tituloItem.setText(weather.titulo);
         holder.fechaItem.setText(weather.fecha);
+        holder.descripcion.setText(weather.descripcion);
         holder.iconoItem.setImageResource(weather.icono == 1 ? R.drawable.bulb_on : R.drawable.bulb_off);
 
         if (!weather.header.equals("")){
@@ -84,6 +85,7 @@ public class lvCalendarioItemsArrayAdapter extends ArrayAdapter<lvCalendarioItem
         TextView header;
         TextView tituloItem;
         TextView fechaItem;
+        TextView descripcion;
         View relContent;
     }
 }
