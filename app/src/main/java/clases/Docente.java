@@ -2,7 +2,8 @@ package clases;
 
 import java.io.Serializable;
 
-public class Representante implements Serializable {
+
+public class Docente implements Serializable {
     private int id;
     private String nombres;
     private String apellidos;

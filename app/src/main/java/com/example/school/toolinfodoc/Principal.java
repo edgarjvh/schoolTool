@@ -1,5 +1,6 @@
 package com.example.school.toolinfodoc;
 
+import android.content.Context;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -12,6 +13,7 @@ import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -36,6 +38,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.TimeZone;
 
+import clases.Docente;
 import clases.Representante;
 import controles.AutoResizeTextView;
 import vistas.CustomProgress;
@@ -46,6 +49,10 @@ import vistas.lvCalendarioItemsArrayAdapter;
 import vistas.lvMensajesItems;
 import vistas.lvMensajesItemsArrayAdapter;
 
+import static com.example.school.toolinfodoc.R.id.lblIdDocente;
+import static com.example.school.toolinfodoc.R.id.rgroupTipoUsuario;
+import static com.example.school.toolinfodoc.R.id.time;
+
 public class Principal extends AppCompatActivity {
 
     Object response = null;
@@ -54,6 +61,8 @@ public class Principal extends AppCompatActivity {
     ArrayList<lvMensajesItems> MensajesItems;
     ArrayList<SpinnerItems> spinnerItems;
     private Representante representante;
+    private Docente docente;
+    private String tipoUsuario;
     private ListView lvCalendario;
     private ListView lvMenu;
     private ListView lvMensajes;
@@ -65,6 +74,7 @@ public class Principal extends AppCompatActivity {
     lvMensajesItemsArrayAdapter adapter;
     SpinnerItemsArrayAdapter spinnerAdapter;
     Spinner cboDocentes;
+    CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -86,29 +96,30 @@ public class Principal extends AppCompatActivity {
         cboDocentes.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> adapterView, View view, int i, long l) {
-                TextView lblIdDocente = (TextView)view.findViewById(R.id.lblIdDocente);
-                new AsyncMensajes().execute(representante.getId(),Integer.parseInt(lblIdDocente.getText().toString()),0,0);
+                timer.cancel();
+                timer.start();
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> adapterView) {
-
+                timer.cancel();
             }
         });
 
         btnEnviarMensaje.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                for (int i = 0; i < MensajesItems.size(); i++){
-                    if (MensajesItems.get(i).getIdMensaje() == 3){
-                        MensajesItems.get(i).setStatus(Integer.parseInt(txtMensaje.getText().toString()));
-                        adapter.notifyDataSetChanged();
-                        break;
-                    }
-                }
+                MensajesItems.add(new lvMensajesItems(
+                        MensajesItems.size() + 1,
+                        1,
+                        1,
+                        Calendar.getInstance().getTimeInMillis(),
+                        txtMensaje.getText().toString()
+                ));
 
-                //MensajesItems.add(new lvMensajesItems(25,1,1,Calendar.getInstance().getTimeInMillis(),txtMensaje.getText().toString()));
-                //lvMensajes.setSelection(MensajesItems.size() -1);
+                lvMensajes.setSelection(MensajesItems.size() -1);
+                txtMensaje.setText(null);
+                ocultarTeclado();
             }
         });
 
@@ -128,13 +139,23 @@ public class Principal extends AppCompatActivity {
         });
 
         Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            representante = (Representante) getIntent().getSerializableExtra("Representante"); //Obtaining data
-        }
-
         AutoResizeTextView lblNombre = (AutoResizeTextView)findViewById(R.id.lblNombre);
-        String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" + representante.getApellidos() + ", " + representante.getNombres() + "</font>";
-        lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
+
+        if (extras != null) {
+            tipoUsuario = getIntent().getStringExtra("TipoUsuario");
+
+            if (tipoUsuario.equals("DOCENTE")){
+                docente = (Docente) getIntent().getSerializableExtra("Docente"); //Obtaining data
+
+                String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" + docente.getApellidos() + ", " + docente.getNombres() + "</font>";
+                lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
+            }else{
+                representante = (Representante) getIntent().getSerializableExtra("Representante"); //Obtaining data
+
+                String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" + representante.getApellidos() + ", " + representante.getNombres() + "</font>";
+                lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
+            }
+        }
 
         lblNombre.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -197,10 +218,36 @@ public class Principal extends AppCompatActivity {
             }
         });
 
+        timer = new CountDownTimer(30000,100) {
+            @Override
+            public void onTick(long l) {
+                if (cboDocentes.getSelectedView() != null){
+                    int lblIdDocente = Integer.parseInt (((TextView)cboDocentes.getSelectedView().findViewById(R.id.lblIdDocente)).getText().toString());
+                    new AsyncMensajes().execute(representante.getId(),lblIdDocente,0,0);
+                    timer.cancel();
+                }
+            }
+
+            @Override
+            public void onFinish() {
+
+            }
+        };
+
+        // crear bloque para docente y representante
         mensaje = "Buscando eventos para esta semana. Por favor espere...";
         new AsyncCalendario().execute(representante.getId(), 0);
         //new AsyncMensajes().execute(representante.getId(),0,0);
         new AsyncDocentes().execute(representante.getId());
+    }
+
+    private void ocultarTeclado(){
+        // Check if no view has focus:
+        View view = this.getCurrentFocus();
+        if (view != null) {
+            InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
+        }
     }
 
     @Override
@@ -288,13 +335,17 @@ public class Principal extends AppCompatActivity {
                 cboDocentes.post(new Runnable() {
                     @Override
                     public void run() {
-                        int lblIdDocente = Integer.parseInt (((TextView)cboDocentes.getSelectedView().findViewById(R.id.lblIdDocente)).getText().toString());
-                        new AsyncMensajes().execute(representante.getId(),lblIdDocente,0,0);
+                        timer.cancel();
+                        timer.start();
                     }
                 });
+
+
             }
         }
     }
+
+
 
     private class AsyncMensajes extends AsyncTask<Object,Integer, Integer>{
 

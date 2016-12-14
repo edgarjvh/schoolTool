@@ -11,6 +11,9 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.ksoap2.SoapEnvelope;
@@ -20,6 +23,7 @@ import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
 import java.util.ArrayList;
 
+import clases.Docente;
 import clases.Representante;
 import vistas.CustomProgress;
 
@@ -28,20 +32,26 @@ public class Login extends Activity {
     Object response = null;
     String mensaje = "";
     Representante representante;
+    Docente docente;
     CustomProgress dialogMessage = null;
+    RadioGroup rgroupTipoUsuario;
+    String tipoUsuario = "";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
 
         final EditText txtCedula = (EditText)findViewById(R.id.txtCedula);
         final EditText txtClave = (EditText)findViewById(R.id.txtClave);
         Button btnIngresar = (Button) findViewById(R.id.btnIngresar);
+        rgroupTipoUsuario = (RadioGroup)findViewById(R.id.rgroupTipoUsuario);
 
         btnIngresar.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                RadioButton rbtn = (RadioButton)rgroupTipoUsuario.findViewById(rgroupTipoUsuario.getCheckedRadioButtonId());
+                tipoUsuario = rbtn.getText().toString();
 
                 if (txtCedula.getText().toString().trim().length() == 0){
                     mensaje = "Debe ingresar la cédula de identidad";
@@ -54,6 +64,7 @@ public class Login extends Activity {
                     mostrarMensaje(false,false,1,mensaje);
                     return;
                 }
+
 
                 new AsyncLogin().execute(txtCedula.getText().toString(),txtClave.getText().toString());
             }
@@ -68,7 +79,7 @@ public class Login extends Activity {
             ArrayList<Object>  parametros = new ArrayList<>(4);
             parametros.add(0, "Cedula*" + params[0]);
             parametros.add(1, "Clave*"+ params[1]);
-            parametros.add(2, "loginRepresentante");
+            parametros.add(2, tipoUsuario.equals("DOCENTE") ? "loginDocente" : "loginRepresentante");
 
             respuesta ws = new respuesta();
             response = ws.getData(parametros);
@@ -82,17 +93,32 @@ public class Login extends Activity {
                 String result = json.get("Result").toString();
 
                 if (result.equals("OK")){
-                    JSONObject array = new JSONObject(json.get("Representante").toString());
-                    representante = new Representante();
-                    representante.setId(array.getInt("Id"));
-                    //representante.setCedula(array.getInt("Cedula"));
-                    representante.setNombres(array.get("Nombres").toString());
-                    representante.setApellidos(array.get("Apellidos").toString());
-                    //representante.setTelefono1(array.getInt("Telefono1"));
-                    //representante.setTelefono2(array.getInt("Telefono2"));
-                    //representante.setDireccion(array.get("Direccion").toString());
-                    publishProgress(1);
-                    return 1;
+                    String tipoClase = tipoUsuario.equals("DOCENTE") ? "Docente" : "Representante";
+                    JSONObject array = new JSONObject(json.get(tipoClase).toString());
+
+                    if (tipoUsuario.equals("DOCENTE")){
+                        docente = new Docente();
+                        docente.setId(array.getInt("Id"));
+                        docente.setCedula(array.getInt("Cedula"));
+                        docente.setNombres(array.get("Nombres").toString());
+                        docente.setApellidos(array.get("Apellidos").toString());
+                        docente.setTelefono1(array.getInt("Telefono1"));
+                        docente.setTelefono2(array.getInt("Telefono2"));
+                        docente.setDireccion(array.get("Direccion").toString());
+                        publishProgress(1);
+                        return 1;
+                    }else{
+                        representante = new Representante();
+                        representante.setId(array.getInt("Id"));
+                        representante.setCedula(array.getInt("Cedula"));
+                        representante.setNombres(array.get("Nombres").toString());
+                        representante.setApellidos(array.get("Apellidos").toString());
+                        representante.setTelefono1(array.getInt("Telefono1"));
+                        representante.setTelefono2(array.getInt("Telefono2"));
+                        representante.setDireccion(array.get("Direccion").toString());
+                        publishProgress(1);
+                        return 1;
+                    }
                 }else{
                     mensaje = json.get("Message").toString();
                     publishProgress(2);
@@ -115,8 +141,14 @@ public class Login extends Activity {
                     mostrarMensaje(false,true,0,mensaje);
                     break;
                 case 1:
-                    mensaje = getResources().getString(R.string.bienvenidoCliente) + "\n" + representante.getNombres() + " " + representante.getApellidos();
-                    mostrarMensaje(true, false, 0, mensaje);
+                    if (tipoUsuario.equals("DOCENTE")){
+                        mensaje = getResources().getString(R.string.bienvenidoCliente) + "\n" + docente.getNombres() + " " + docente.getApellidos();
+                        mostrarMensaje(true, false, 0, mensaje);
+                    }else{
+                        mensaje = getResources().getString(R.string.bienvenidoCliente) + "\n" + representante.getNombres() + " " + representante.getApellidos();
+                        mostrarMensaje(true, false, 0, mensaje);
+                    }
+
                     break;
                 case 2:
                     mostrarMensaje(false,false,2,mensaje);
@@ -199,7 +231,14 @@ public class Login extends Activity {
                     @Override
                     public void onFinish() {
                         Intent i = new Intent(Login.this, Principal.class);
-                        i.putExtra("Representante",representante);
+                        i.putExtra("TipoUsuario",tipoUsuario);
+
+                        if (tipoUsuario.equals("DOCENTE")){
+                            i.putExtra("Docente",docente);
+                        }else{
+                            i.putExtra("Representante",representante);
+                        }
+
                         startActivity(i);
 
                         if (dialogMessage != null){
