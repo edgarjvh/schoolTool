@@ -2,6 +2,7 @@ package com.example.school.toolinfodoc;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
@@ -13,6 +14,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+
+import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -27,7 +30,14 @@ import clases.Docente;
 import clases.Representante;
 import vistas.CustomProgress;
 
-public class Login extends Activity {
+public class FrmLogin extends Activity {
+
+    SharedPreferences sPrefs;
+    SharedPreferences.Editor sEditor;
+    private static  final String PREF_NAME = "prefSchoolTool";
+    private static final String PROPERTY_USER_TYPE = "userType"; //-1=ninguno ; 0=docente ; 1=representante
+    private static final String PROPERTY_USER = "user";
+    private static final String PROPERTY_REG_ID = "registration_id";
 
     Object response = null;
     String mensaje = "";
@@ -41,6 +51,20 @@ public class Login extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        if (sPrefs == null){
+            getApplicationContext().getSharedPreferences(PREF_NAME,MODE_PRIVATE);
+        }
+
+        if (!sPrefs.getString(PROPERTY_USER_TYPE,"").equals("doc")){
+            Intent frm = new Intent(FrmLogin.this, FrmDocente.class);
+            startActivity(frm);
+            return;
+        }else if (!sPrefs.getString(PROPERTY_USER_TYPE,"").equals("rep")){
+            Intent frm = new Intent(FrmLogin.this, FrmRepresentante.class);
+            startActivity(frm);
+            return;
+        }
 
         final EditText txtCedula = (EditText)findViewById(R.id.txtCedula);
         final EditText txtClave = (EditText)findViewById(R.id.txtClave);
@@ -218,7 +242,7 @@ public class Login extends Activity {
                     dialogMessage = null;
                 }
 
-                dialogMessage = new CustomProgress(Login.this,enProgreso,icono,msj);
+                dialogMessage = new CustomProgress(FrmLogin.this,enProgreso,icono,msj);
                 dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                 dialogMessage.setCanceledOnTouchOutside(false);
                 dialogMessage.show();
@@ -230,14 +254,22 @@ public class Login extends Activity {
 
                     @Override
                     public void onFinish() {
-                        Intent i = new Intent(Login.this, Principal.class);
-                        i.putExtra("TipoUsuario",tipoUsuario);
+                        Intent i = new Intent(FrmLogin.this, FrmRepresentante.class);
+
+                        sEditor = sPrefs.edit();
+                        Gson gson = new Gson();
 
                         if (tipoUsuario.equals("DOCENTE")){
-                            i.putExtra("Docente",docente);
+                            String user = gson.toJson(docente);
+                            sEditor.putInt(PROPERTY_USER_TYPE,0);
+                            sEditor.putString(PROPERTY_USER,user);
                         }else{
-                            i.putExtra("Representante",representante);
+                            String user = gson.toJson(representante);
+                            sEditor.putInt(PROPERTY_USER_TYPE,1);
+                            sEditor.putString(PROPERTY_USER,user);
                         }
+
+                        sEditor.apply();
 
                         startActivity(i);
 
@@ -255,7 +287,7 @@ public class Login extends Activity {
                         dialogMessage = null;
                     }
 
-                    dialogMessage = new CustomProgress(Login.this,enProgreso,icono, msj);
+                    dialogMessage = new CustomProgress(FrmLogin.this,enProgreso,icono, msj);
                     dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     dialogMessage.setCanceledOnTouchOutside(true);
                     dialogMessage.show();
@@ -265,7 +297,7 @@ public class Login extends Activity {
                         dialogMessage = null;
                     }
 
-                    dialogMessage = new CustomProgress(Login.this,enProgreso,icono,msj);
+                    dialogMessage = new CustomProgress(FrmLogin.this,enProgreso,icono,msj);
                     dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
                     dialogMessage.setCanceledOnTouchOutside(true);
                     dialogMessage.show();

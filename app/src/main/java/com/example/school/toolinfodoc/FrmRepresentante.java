@@ -1,6 +1,7 @@
 package com.example.school.toolinfodoc;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
@@ -12,7 +13,6 @@ import android.os.Bundle;
 import android.text.Html;
 import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.Button;
@@ -23,6 +23,7 @@ import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TabHost;
 import android.widget.TextView;
+import com.google.gson.Gson;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -31,14 +32,8 @@ import org.ksoap2.serialization.PropertyInfo;
 import org.ksoap2.serialization.SoapObject;
 import org.ksoap2.serialization.SoapSerializationEnvelope;
 import org.ksoap2.transport.HttpTransportSE;
-
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.TimeZone;
-
-import clases.Docente;
 import clases.Representante;
 import controles.AutoResizeTextView;
 import vistas.CustomProgress;
@@ -49,11 +44,14 @@ import vistas.lvCalendarioItemsArrayAdapter;
 import vistas.lvMensajesItems;
 import vistas.lvMensajesItemsArrayAdapter;
 
-import static com.example.school.toolinfodoc.R.id.lblIdDocente;
-import static com.example.school.toolinfodoc.R.id.rgroupTipoUsuario;
-import static com.example.school.toolinfodoc.R.id.time;
+public class FrmRepresentante extends AppCompatActivity {
 
-public class Principal extends AppCompatActivity {
+    SharedPreferences sPrefs;
+    SharedPreferences.Editor sEditor;
+    private static final String PREF_NAME = "prefSchoolTool";
+    private static final String PROPERTY_USER_TYPE = "user_type"; //-1=ninguno ; 0=docente ; 1=representante
+    private static final String PROPERTY_USER = "user";
+    private static final String PROPERTY_REG_ID = "registration_id";
 
     Object response = null;
     String mensaje = "";
@@ -61,16 +59,16 @@ public class Principal extends AppCompatActivity {
     ArrayList<lvMensajesItems> MensajesItems;
     ArrayList<SpinnerItems> spinnerItems;
     private Representante representante;
-    private Docente docente;
-    private String tipoUsuario;
     private ListView lvCalendario;
     private ListView lvMenu;
     private ListView lvMensajes;
     private CustomProgress dialogMessage;
     DrawerLayout drawerLayout;
     AutoResizeTextView lblSinEventos;
+    AutoResizeTextView lblCargandoEventos;
     int value = 0;
     View sinEventos;
+    View cargandoEventos;
     lvMensajesItemsArrayAdapter adapter;
     SpinnerItemsArrayAdapter spinnerAdapter;
     Spinner cboDocentes;
@@ -79,7 +77,12 @@ public class Principal extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_principal);
+        setContentView(R.layout.activity_representante);
+
+        if (sPrefs == null){
+            getApplicationContext().getSharedPreferences(PREF_NAME,MODE_PRIVATE);
+        }
+
         MensajesItems = new ArrayList<>();
         spinnerItems = new ArrayList<>();
 
@@ -138,24 +141,16 @@ public class Principal extends AppCompatActivity {
             }
         });
 
-        Bundle extras = getIntent().getExtras();
+        Gson gson = new Gson();
+        String user = sPrefs.getString(PROPERTY_USER,"");
+        representante = gson.fromJson(user,Representante.class);
+
+        String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" +
+                representante.getApellidos() + ", " +
+                representante.getNombres() + "</font>";
+
         AutoResizeTextView lblNombre = (AutoResizeTextView)findViewById(R.id.lblNombre);
-
-        if (extras != null) {
-            tipoUsuario = getIntent().getStringExtra("TipoUsuario");
-
-            if (tipoUsuario.equals("DOCENTE")){
-                docente = (Docente) getIntent().getSerializableExtra("Docente"); //Obtaining data
-
-                String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" + docente.getApellidos() + ", " + docente.getNombres() + "</font>";
-                lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
-            }else{
-                representante = (Representante) getIntent().getSerializableExtra("Representante"); //Obtaining data
-
-                String nombre = "Bienvenido(a)\n" + "<font color='#0808e1'>" + representante.getApellidos() + ", " + representante.getNombres() + "</font>";
-                lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
-            }
-        }
+        lblNombre.setText(Html.fromHtml(nombre), TextView.BufferType.SPANNABLE);
 
         lblNombre.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -187,16 +182,15 @@ public class Principal extends AppCompatActivity {
         tabs.setCurrentTab(0);
 
         sinEventos = findViewById(R.id.emptyView);
+        cargandoEventos = findViewById(R.id.loadingView);
         lblSinEventos = (AutoResizeTextView) sinEventos.findViewById(R.id.lblSinEventos);
-        lvCalendario.setEmptyView(sinEventos);
+        lblCargandoEventos = (AutoResizeTextView) cargandoEventos.findViewById(R.id.lblCargandoEventos);
+        lvCalendario.setEmptyView(cargandoEventos);
 
         rgroupOpcionesCalendario.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(RadioGroup radioGroup, int i) {
                 RadioButton rbtn = (RadioButton)radioGroup.findViewById(i);
-                // This puts the value (true/false) into the variable
-
-                Log.d("radio",rbtn.getText().toString());
 
                 switch (rbtn.getText().toString()){
                     case "Esta Semana" :
@@ -214,7 +208,6 @@ public class Principal extends AppCompatActivity {
                 }
 
                 new AsyncCalendario().execute(representante.getId(),value);
-
             }
         });
 
@@ -234,10 +227,8 @@ public class Principal extends AppCompatActivity {
             }
         };
 
-        // crear bloque para docente y representante
         mensaje = "Buscando eventos para esta semana. Por favor espere...";
         new AsyncCalendario().execute(representante.getId(), 0);
-        //new AsyncMensajes().execute(representante.getId(),0,0);
         new AsyncDocentes().execute(representante.getId());
     }
 
@@ -328,7 +319,7 @@ public class Principal extends AppCompatActivity {
             super.onProgressUpdate(values);
 
             if (values[0] == 1){
-                spinnerAdapter = new SpinnerItemsArrayAdapter(Principal.this,spinnerItems);
+                spinnerAdapter = new SpinnerItemsArrayAdapter(FrmRepresentante.this,spinnerItems);
                 cboDocentes.setAdapter(spinnerAdapter);
                 cboDocentes.setSelection(0);
 
@@ -344,8 +335,6 @@ public class Principal extends AppCompatActivity {
             }
         }
     }
-
-
 
     private class AsyncMensajes extends AsyncTask<Object,Integer, Integer>{
 
@@ -417,7 +406,7 @@ public class Principal extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Integer... values) {
             if (values[0] == 1){
-                adapter = new lvMensajesItemsArrayAdapter(Principal.this,MensajesItems);
+                adapter = new lvMensajesItemsArrayAdapter(FrmRepresentante.this,MensajesItems);
                 lvMensajes.setAdapter(null);
                 lvMensajes.setAdapter(adapter);
             }
@@ -428,8 +417,10 @@ public class Principal extends AppCompatActivity {
     }
 
     private class AsyncCalendario extends AsyncTask<Object, Integer, Integer> {
+
         @Override
         protected Integer doInBackground(Object... params) {
+
             publishProgress(0);
             ArrayList<Object>  parametros = new ArrayList<>(4);
             parametros.add(0, "Id*" + params[0]);
@@ -469,13 +460,13 @@ public class Principal extends AppCompatActivity {
                         publishProgress(2);
                         break;
                     default:
-                        mensaje = jsonObj.get("Message").toString();
+                        mensaje = "Error de conexión";
                         publishProgress(3);
                         break;
                 }
                 return null;
             } catch (JSONException e) {
-                mensaje = e.getMessage();
+                mensaje = "Error de conexión";
                 publishProgress(4);
                 return null;
             }
@@ -487,10 +478,14 @@ public class Principal extends AppCompatActivity {
 
             switch (values[0]){
                 case 0:
-                    mostrarMensaje(true, 0, mensaje);
+                    lblCargandoEventos.setText(mensaje);
+                    sinEventos.setVisibility(View.GONE);
+                    cargandoEventos.setVisibility(View.VISIBLE);
+                    lvCalendario.setEmptyView(cargandoEventos);
+                    lvCalendario.setAdapter(null);
                     break;
                 case 1:
-                    lvCalendarioItemsArrayAdapter adapter = new lvCalendarioItemsArrayAdapter(Principal.this,R.layout.lvcalendarioitemlayout,CalendarioItems);
+                    lvCalendarioItemsArrayAdapter adapter = new lvCalendarioItemsArrayAdapter(FrmRepresentante.this,R.layout.lvcalendarioitemlayout,CalendarioItems);
                     lvCalendario.setAdapter(adapter);
                     if (dialogMessage != null){
                         dialogMessage.dismiss();
@@ -510,7 +505,9 @@ public class Principal extends AppCompatActivity {
                             break;
                     }
                     lblSinEventos.setText(mensaje);
+                    cargandoEventos.setVisibility(View.GONE);
                     sinEventos.setVisibility(View.VISIBLE);
+                    lvCalendario.setEmptyView(sinEventos);
                     lvCalendario.setAdapter(null);
 
                     if (dialogMessage != null){
@@ -519,7 +516,7 @@ public class Principal extends AppCompatActivity {
                     }
                     break;
                 default:
-                    switch (value){
+                    /*switch (value){
                         case 0:
                             mensaje = "No hay eventos para esta semana";
                             break;
@@ -529,11 +526,12 @@ public class Principal extends AppCompatActivity {
                         case 2:
                             mensaje = "No hay eventos para este año";
                             break;
-                    }
+                    }*/
                     lblSinEventos.setText(mensaje);
+                    cargandoEventos.setVisibility(View.GONE);
                     sinEventos.setVisibility(View.VISIBLE);
+                    lvCalendario.setEmptyView(sinEventos);
                     lvCalendario.setAdapter(null);
-                    mostrarMensaje(false, 2, mensaje);
                     break;
             }
         }
@@ -587,7 +585,7 @@ public class Principal extends AppCompatActivity {
                 dialogMessage.dismiss();
                 dialogMessage = null;
             }
-            dialogMessage = new CustomProgress(Principal.this,enProgreso,icono,msj);
+            dialogMessage = new CustomProgress(FrmRepresentante.this,enProgreso,icono,msj);
             dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialogMessage.setCanceledOnTouchOutside(true);
             dialogMessage.show();
@@ -597,7 +595,7 @@ public class Principal extends AppCompatActivity {
                 dialogMessage = null;
             }
 
-            dialogMessage = new CustomProgress(Principal.this,enProgreso,icono,msj);
+            dialogMessage = new CustomProgress(FrmRepresentante.this,enProgreso,icono,msj);
             dialogMessage.getWindow().setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
             dialogMessage.setCanceledOnTouchOutside(true);
             dialogMessage.show();

@@ -16,4 +16,5 @@
     <string name="docentes">Docentes</string>
     <string name="representante">REPRESENTANTE</string>
     <string name="docente">DOCENTE</string>
+    <string name="cargando_eventos_npor_favor_espere">Cargando Eventos\nPor favor espere...</string>
 </resources>

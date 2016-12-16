@@ -5,7 +5,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/background"
-    tools:context="com.example.school.toolinfodoc.Principal">
+    tools:context="com.example.school.toolinfodoc.FrmRepresentante">
 
     <controles.AutoResizeTextView
         android:layout_width="match_parent"
@@ -149,6 +149,43 @@
                                     android:layout_below="@+id/imgEmpty"
                                     android:textStyle="bold|italic"
                                     android:id="@+id/lblSinEventos"/>
+                            </RelativeLayout>
+
+                            <RelativeLayout
+                                android:layout_height="fill_parent"
+                                android:layout_width="fill_parent"
+                                android:layout_centerInParent="true"
+                                android:id="@+id/loadingView"
+                                android:visibility="gone">
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="horizontal"
+                                    android:layout_centerInParent="true">
+
+                                    <ProgressBar
+                                        android:layout_width="50dp"
+                                        android:layout_height="50dp"
+                                        android:id="@+id/pbarCargandoEventos"
+                                        android:layout_gravity="center_vertical"
+                                        android:layout_marginRight="10dp"
+                                        android:layout_marginEnd="10dp"/>
+
+                                    <controles.AutoResizeTextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:id="@+id/lblCargandoEventos"
+                                        android:text="@string/cargando_eventos_npor_favor_espere"
+                                        android:layout_gravity="center_vertical"
+                                        android:textColor="#6E6E6E"
+                                        android:textStyle="bold|italic"
+                                        android:gravity="center_horizontal|center_vertical"
+                                        android:textAlignment="gravity"
+                                        android:textSize="26sp"
+                                        />
+                                </LinearLayout>
+
                             </RelativeLayout>
 
                             <ListView
